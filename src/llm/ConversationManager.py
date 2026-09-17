@@ -1,6 +1,7 @@
 from llm.userRole import UserRole
 from llm.conversationComponents import ConversationComponents
 from llm.client import LLMClient
+from llm.resumeSchema import resume_schema
 
 class ConversationManager: 
     def __init__(self, client: LLMClient, conversation: list):
@@ -15,7 +16,7 @@ class ConversationManager:
                 ConversationComponents.CONTENT.value: prompt
             })
 
-        response = self.client.generate(conversation=self.conversation)
+        response = self.client.generate(conversation=self.conversation, schema=resume_schema)
 
         self.conversation.append({
             ConversationComponents.ROLE.value: UserRole.ASSISTANT.value,
