@@ -28,12 +28,19 @@ class ConversationManager:
             conversation=self.conversation,
             tools=tools
         )
+        
+        while True: 
+            function_call = None
+            for item in response.output:
 
-        for item in response.output:
-
-            if item.type == "function_call":
-
-                arguments = json.loads(item.arguments)
+                if item.type == "function_call":
+                    function_call = item
+                    break
+                
+                if function_call is None:
+                    return response
+                
+                arguments = json.loads(function_call.arguments)
 
                 years = arguments["years_of_experience"]
 
@@ -43,7 +50,7 @@ class ConversationManager:
 
                 tool_output = {
                     "type": "function_call_output",
-                    "call_id": item.call_id,
+                    "call_id": function_call.call_id,
                     "output": result
                 }
 
@@ -53,11 +60,10 @@ class ConversationManager:
                     tool_output
                 ]
 
-                final_response = self.client.generate_with_tools(
+                response = self.client.generate_with_tools(
                     conversation=next_input,
                     tools=tools
                 )
 
-                return final_response
+                return response
 
-        return response
