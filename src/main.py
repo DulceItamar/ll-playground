@@ -3,7 +3,8 @@ from llm.client import LLMClient
 from llm.userRole import UserRole
 from llm.conversationComponents import ConversationComponents
 from llm.ConversationManager import ConversationManager
-from llm.Seniority import define_Seniority
+
+from llm.tools_schema import tool_schema
 import json
 
 load_dotenv()
@@ -24,17 +25,22 @@ def main():
 
         if prompt.lower() == "exit":
             break
+        
+        if not prompt.strip():
+            continue
 
-        if prompt.lower() == "show_conversation":
-            print("\nConversación:")
-            print(conversation)
+        # if prompt.lower() == "show_conversation":
+        #     print("\nConversación:")
+        #     print(conversation)
 
-        response = manager.start_conversation(prompt=prompt)
-        data = json.loads(response)
-
-        seniority = define_Seniority(years=data["years_of_experience"])
+        response = manager.start_conversation(prompt=prompt, tools=[tool_schema])
+  
+      
         print("\nAssistant:")
-        print(seniority)
+        print(response.output_text)
+     
+     
+
 
 if __name__== "__main__":
     main()
