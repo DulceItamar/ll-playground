@@ -1,8 +1,7 @@
 from llm.userRole import UserRole
 from llm.conversationComponents import ConversationComponents
 from llm.client import LLMClient
-from llm.resumeSchema import resume_schema
-from llm.tools import get_seniority
+from llm.tools.tool_registry import tool_registry
 import json
 
 
@@ -29,7 +28,10 @@ class ConversationManager:
             tools=tools
         )
         
-        while True: 
+        max_iterations = 10
+        iteration = 0
+        
+        while iteration < max_iterations: 
             function_call = None
             for item in response.output:
 
@@ -40,14 +42,28 @@ class ConversationManager:
                 if function_call is None:
                     return response
                 
-                arguments = json.loads(function_call.arguments)
-
-                years = arguments["years_of_experience"]
-
-                result = get_seniority(
-                    years_of_experience=years
-                )
-
+                iteration += 1
+                
+                # ----------------------
+                # Tool Validation 
+                # ----------------------
+                
+                tool = tool_registry[function_call.name]
+                
+                if tool is None:
+                    raise ValueError(f"Tool '{function_call.name}' not found in the tool registry.")
+                
+                tool_function = tool.function
+                arguments_model = tool.arguments_model
+                
+                arguments = arguments_model.model_validate_json(function_call.arguments)
+                
+                # ----------------------
+                # Tool execution
+                # ----------------------
+                
+                result = tool_function(**arguments.model_dump())
+                
                 tool_output = {
                     "type": "function_call_output",
                     "call_id": function_call.call_id,
@@ -65,5 +81,8 @@ class ConversationManager:
                     tools=tools
                 )
 
-                return response
+        raise RuntimeError(
+            f"Agent Loop excedió el máximo de "
+            f"{max_iterations} iteraciones."
+)
 

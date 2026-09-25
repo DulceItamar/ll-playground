@@ -3,9 +3,7 @@ from llm.client import LLMClient
 from llm.userRole import UserRole
 from llm.conversationComponents import ConversationComponents
 from llm.ConversationManager import ConversationManager
-
-from llm.tools_schema import tool_schema
-import json
+from llm.tools.tool_schemas import tool_schemas
 
 load_dotenv()
 
@@ -29,18 +27,11 @@ def main():
         if not prompt.strip():
             continue
 
-        # if prompt.lower() == "show_conversation":
-        #     print("\nConversación:")
-        #     print(conversation)
-
-        response = manager.start_conversation(prompt=prompt, tools=[tool_schema])
+        response = manager.start_conversation(prompt=prompt, tools=tool_schemas)
   
-      
         print("\nAssistant:")
         print(response.output_text)
      
-     
-
 
 if __name__== "__main__":
     main()
